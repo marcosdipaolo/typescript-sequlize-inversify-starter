@@ -1,0 +1,9 @@
+{
+  "development": {
+    "username": "root",
+    "password": "seqtest",
+    "database": "seqtest",
+    "host": "localhost",
+    "dialect": "mysql"
+  }
+}
