@@ -1,41 +1,46 @@
-import { Column, DataType, Model, Table } from "sequelize-typescript";
-import { Optional } from "sequelize";
-
-interface UserAttributes {
-  id: string;
-  name: string;
-  email: string;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
+import {
+  CreationOptional,
+  InferAttributes,
+  InferCreationAttributes,
+  Model,
+  DataTypes,
+} from "@sequelize/core";
+import {
+  Attribute,
+  NotNull,
+  PrimaryKey,
+  CreatedAt,
+  UpdatedAt,
+  Table,
+  Default,
+} from "@sequelize/core/decorators-legacy";
 
 @Table({
   tableName: "users",
-  timestamps: false,
+  timestamps: true,
 })
-class User extends Model<UserAttributes, UserCreationAttributes> {
-  tableName: string = "users";
+class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
+  @Attribute(DataTypes.UUID)
+  @PrimaryKey
+  @NotNull
+  @Default(DataTypes.UUIDV4)
+  declare id: CreationOptional<string>;
 
-  @Column({
-    primaryKey: true,
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4,
-    allowNull: false,
-  })
-  id?: string;
+  @Attribute(DataTypes.STRING)
+  @NotNull
+  declare name: string;
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  name!: string;
+  @Attribute(DataTypes.STRING)
+  @NotNull
+  declare email: string;
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  email!: string;
+  @CreatedAt
+  @NotNull
+  declare createdAt: CreationOptional<Date>;
+
+  @UpdatedAt
+  @NotNull
+  declare updatedAt: CreationOptional<Date>;
 }
 
 export default User;

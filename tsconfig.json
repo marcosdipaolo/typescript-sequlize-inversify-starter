@@ -23,8 +23,9 @@
     "typeRoots": ["../../node_modules/@types"],
     "outDir": "build",
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true
   },
   "include": ["./**/*.ts"],
-  "exclude": ["node_modules", "build", "dist"]
+  "exclude": ["build", "dist"]
 }

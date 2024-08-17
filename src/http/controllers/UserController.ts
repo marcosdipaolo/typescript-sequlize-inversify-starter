@@ -3,12 +3,12 @@ import { createLogger } from "../../logger";
 import {
   controller,
   httpPost,
-  BaseHttpController,
   request,
   httpGet,
   requestParam,
   httpPatch,
   requestBody,
+  httpDelete,
 } from "inversify-express-utils";
 import { IUserService } from "../../services/UserService";
 import { inject } from "inversify";
@@ -16,9 +16,17 @@ import { TYPES } from "../../container/constants";
 import { Logger } from "winston";
 import { userCreateValidationMiddleware } from "../validators/users/createValidator";
 import { updateUserValidator } from "../validators/users/updateValidator";
+import {
+  InternalServerErrorResult,
+  JsonResult,
+  NotFoundResult,
+  OkResult,
+} from "inversify-express-utils/lib/results";
+import { BaseController } from "./BaseController";
+import { uuidValidator } from "../validators/uuidValidator";
 
 @controller("/users")
-export class UserController extends BaseHttpController {
+export class UserController extends BaseController {
   constructor(
     @inject(TYPES.UserService) private userService: IUserService,
     private logger: Logger = createLogger("UserController"),
@@ -27,22 +35,22 @@ export class UserController extends BaseHttpController {
   }
 
   @httpGet("/")
-  async getUsers() {
+  async getUsers(): Promise<JsonResult | InternalServerErrorResult> {
     try {
-      console.log(
-        "this.httpContext",
-        await this.httpContext.user.isAuthenticated(),
-      );
       return this.json(await this.userService.getUsers());
     } catch (error) {
-      return this.handleError(error);
+      this.logger.error(error);
+      return this.internalServerError();
     }
   }
 
-  @httpGet("/:id")
-  async getUser(@requestParam("id") id: string) {
+  @httpGet("/:id", uuidValidator)
+  async getUser(
+    @requestParam("id") id: string,
+  ): Promise<JsonResult | NotFoundResult> {
     try {
-      return this.json(await this.userService.getUser(id));
+      const user = await this.userService.getUser(id);
+      return this.json(user);
     } catch (error) {
       return this.handleError(error);
     }
@@ -57,23 +65,30 @@ export class UserController extends BaseHttpController {
     }
   }
 
-  @httpPatch("/:id", updateUserValidator)
+  @httpPatch("/:id", uuidValidator, updateUserValidator)
   async updateUser(
     @requestBody() body: { name?: string; email?: string },
     @requestParam("id") id: string,
   ) {
     try {
       const { name, email } = body;
-      return this.json(await this.userService.updateUser(id, { name, email }));
+      const user = await this.userService.getUser(id);
+      return this.json(
+        await this.userService.updateUser(user!, { name, email }),
+      );
     } catch (error) {
       return this.handleError(error);
     }
   }
 
-  private handleError(error: Error | unknown) {
-    this.logger.error(error);
-    return this.json({
-      error: error instanceof Error ? error.message : String(error),
-    });
+  @httpDelete("/:id", uuidValidator)
+  async deleteUser(
+    @requestParam("id") id: string,
+  ): Promise<OkResult | NotFoundResult> {
+    const success = await this.userService.deleteUser(id);
+    if (!success) {
+      return this.notFound();
+    }
+    return this.ok();
   }
 }

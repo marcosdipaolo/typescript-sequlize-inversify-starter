@@ -5,8 +5,9 @@ import express from "express";
 import { container } from "./container";
 import { InversifyExpressServer } from "inversify-express-utils";
 import morgan from "morgan";
+import User from "./models/User";
 
-sequelize.addModels([__dirname + "/models"]);
+sequelize.addModels([User]);
 sequelize
   .authenticate()
   .then(() => logger.info("Connection has been established successfully."))

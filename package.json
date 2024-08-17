@@ -22,6 +22,9 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@sequelize/core": "^7.0.0-alpha.41",
+    "@sequelize/mariadb": "^7.0.0-alpha.41",
+    "@sequelize/mysql": "^7.0.0-alpha.41",
     "express": "^4.19.2",
     "global": "^4.4.0",
     "inversify": "^6.0.2",
@@ -32,7 +35,6 @@
     "mysql2": "^3.11.0",
     "reflect-metadata": "^0.2.2",
     "sequelize": "^6.37.3",
-    "sequelize-typescript": "^2.1.6",
     "winston": "^3.14.2"
   }
 }

@@ -3,16 +3,19 @@ import User from "../models/User";
 import { createLogger } from "../logger";
 import { Logger } from "winston";
 
-class UserNotFountError extends Error {}
+export class UserNotFoundError extends Error {
+  message = "User not found.";
+}
 
 export interface IUserService {
   createUser: (body: { name: string; email: string }) => Promise<User>;
   getUsers: () => Promise<User[]>;
   getUser: (id: string) => Promise<User | null>;
   updateUser: (
-    id: string,
+    user: User,
     body: { name?: string; email?: string },
   ) => Promise<User>;
+  deleteUser: (id: string) => Promise<boolean>;
 }
 
 @injectable()
@@ -29,13 +32,16 @@ export class UserService implements IUserService {
   };
 
   getUsers = async () => User.findAll();
-  getUser = async (id: string) => User.findByPk(id);
-
-  updateUser = async (id: string, body: { name?: string; email?: string }) => {
-    const user: User | null = await User.findByPk(id);
+  getUser = async (id: string) => {
+    const user = await User.findByPk(id);
     if (!user) {
-      throw new UserNotFountError();
+      throw new UserNotFoundError();
+    } else {
+      return user;
     }
+  };
+
+  updateUser = async (user: User, body: { name?: string; email?: string }) => {
     Object.keys(body).forEach((key: string) => {
       const value = body[key as keyof typeof body];
       if (value) {
@@ -44,5 +50,12 @@ export class UserService implements IUserService {
     });
     await user.save();
     return user.reload();
+  };
+
+  deleteUser = async (id: string): Promise<boolean> => {
+    const rows = await User.destroy({
+      where: { id },
+    });
+    return Boolean(rows);
   };
 }
