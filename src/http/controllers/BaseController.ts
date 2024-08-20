@@ -1,11 +1,14 @@
 import { BaseHttpController } from "inversify-express-utils";
 import { JsonResult } from "inversify-express-utils/lib/results";
-import { createLogger } from "../../logger";
 import { UserNotFoundError } from "../../services/UserService";
+import { Logger } from "winston";
+import { createLogger } from "../../logger";
 
 export class BaseController extends BaseHttpController {
+  protected logger: Logger = createLogger(this.constructor.name);
+
   protected handleError(error: Error | unknown): JsonResult {
-    createLogger(this.constructor.name).error(error);
+    this.logger.error(error);
     const isError = error instanceof Error;
     let statusCode = 500;
     if (error instanceof UserNotFoundError) {

@@ -2,6 +2,7 @@ import { injectable } from "inversify";
 import User from "../models/User";
 import { createLogger } from "../logger";
 import { Logger } from "winston";
+import BaseService from "./BaseService";
 
 export class UserNotFoundError extends Error {
   message = "User not found.";
@@ -19,9 +20,7 @@ export interface IUserService {
 }
 
 @injectable()
-export class UserService implements IUserService {
-  constructor(private logger: Logger = createLogger("UserService")) {}
-
+export class UserService extends BaseService implements IUserService {
   createUser = async (body: { name: string; email: string }) => {
     const { name, email } = body;
     const user = await User.create<User>({ name, email });
@@ -31,7 +30,10 @@ export class UserService implements IUserService {
     return user;
   };
 
-  getUsers = async () => User.findAll();
+  getUsers = async () => {
+    this.logger.info("Hey there from User service.");
+    return User.findAll();
+  };
   getUser = async (id: string) => {
     const user = await User.findByPk(id, {
       include: [

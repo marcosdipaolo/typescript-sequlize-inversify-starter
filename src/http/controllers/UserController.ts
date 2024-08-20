@@ -32,7 +32,6 @@ export class UserController extends BaseController {
   constructor(
     @inject(TYPES.UserService) private userService: IUserService,
     @inject(TYPES.OrderService) private orderService: IOrderService,
-    private logger: Logger = createLogger("UserController"),
   ) {
     super();
   }
@@ -40,7 +39,9 @@ export class UserController extends BaseController {
   @httpGet("/")
   async getUsers(): Promise<JsonResult | InternalServerErrorResult> {
     try {
-      return this.json(await this.userService.getUsers());
+      const users = await this.userService.getUsers();
+      this.logger.info(`We have ${users.length} users on our database.`);
+      return this.json(users);
     } catch (error) {
       this.logger.error(error);
       return this.internalServerError();

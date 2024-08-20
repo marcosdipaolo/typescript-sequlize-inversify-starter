@@ -3,13 +3,14 @@ import { ProductInput } from "../http/controllers/types";
 import Order from "../models/Order";
 import User from "../models/User";
 import Product from "../models/Product";
+import BaseService from "./BaseService";
 
 export interface IOrderService {
   addOrder: (user: User, products: ProductInput[]) => Promise<Order>;
 }
 
 @injectable()
-export class OrderService implements IOrderService {
+export class OrderService extends BaseService implements IOrderService {
   addOrder = async (user: User, products: ProductInput[]) => {
     const productModels: Product[] = await Product.bulkCreate(products);
     const totalPrice = products.reduce((acc: number, product: ProductInput) => {
