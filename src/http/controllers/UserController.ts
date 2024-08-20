@@ -1,5 +1,4 @@
 import { Request } from "express";
-import { createLogger } from "../../logger";
 import {
   controller,
   httpPost,
@@ -13,7 +12,6 @@ import {
 import { IUserService, UserNotFoundError } from "../../services/UserService";
 import { inject } from "inversify";
 import { TYPES } from "../../container/constants";
-import { Logger } from "winston";
 import { userCreateValidationMiddleware } from "../validators/users/createValidator";
 import { updateUserValidator } from "../validators/users/updateValidator";
 import {

@@ -1,7 +1,5 @@
 import { injectable } from "inversify";
 import User from "../models/User";
-import { createLogger } from "../logger";
-import { Logger } from "winston";
 import BaseService from "./BaseService";
 
 export class UserNotFoundError extends Error {
