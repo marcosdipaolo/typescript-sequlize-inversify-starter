@@ -33,7 +33,14 @@ export class UserService implements IUserService {
 
   getUsers = async () => User.findAll();
   getUser = async (id: string) => {
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id, {
+      include: [
+        {
+          association: "orders",
+          include: ["products"],
+        },
+      ],
+    });
     if (!user) {
       throw new UserNotFoundError();
     } else {

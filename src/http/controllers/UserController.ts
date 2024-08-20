@@ -10,7 +10,7 @@ import {
   requestBody,
   httpDelete,
 } from "inversify-express-utils";
-import { IUserService } from "../../services/UserService";
+import { IUserService, UserNotFoundError } from "../../services/UserService";
 import { inject } from "inversify";
 import { TYPES } from "../../container/constants";
 import { Logger } from "winston";
@@ -24,11 +24,14 @@ import {
 } from "inversify-express-utils/lib/results";
 import { BaseController } from "./BaseController";
 import { uuidValidator } from "../validators/uuidValidator";
+import { IOrderService } from "../../services/OrderService";
+import { ProductInput } from "./types";
 
 @controller("/users")
 export class UserController extends BaseController {
   constructor(
     @inject(TYPES.UserService) private userService: IUserService,
+    @inject(TYPES.OrderService) private orderService: IOrderService,
     private logger: Logger = createLogger("UserController"),
   ) {
     super();
@@ -41,6 +44,39 @@ export class UserController extends BaseController {
     } catch (error) {
       this.logger.error(error);
       return this.internalServerError();
+    }
+  }
+
+  @httpGet("/:id/orders", uuidValidator)
+  async getOrders(
+    @requestParam("id") id: string,
+  ): Promise<JsonResult | InternalServerErrorResult> {
+    try {
+      const user = await this.userService.getUser(id);
+      return this.json(
+        await user!.getOrders({
+          include: ["products"],
+        }),
+      );
+    } catch (error) {
+      this.logger.error(error);
+      return this.internalServerError();
+    }
+  }
+
+  @httpPost("/:id/orders", uuidValidator)
+  async addOrder(
+    @requestParam("id") id: string,
+    @requestBody()
+    body: { products: ProductInput[]; totalPrice: number },
+  ) {
+    try {
+      const user = await this.userService.getUser(id);
+      if (!user) throw new UserNotFoundError();
+      const { products } = body;
+      return this.orderService.addOrder(user, products);
+    } catch (error) {
+      return this.handleError(error);
     }
   }
 
